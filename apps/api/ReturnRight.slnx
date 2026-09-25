@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ReturnRight.Api/ReturnRight.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ReturnRight.IntegrationTests/ReturnRight.IntegrationTests.csproj" />
+    <Project Path="tests/ReturnRight.UnitTests/ReturnRight.UnitTests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,88 @@
+name: returnright
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-returnright}
+      POSTGRES_USER: ${POSTGRES_USER:-returnright}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-returnright}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-returnright} -d ${POSTGRES_DB:-returnright}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Uncomment to expose Postgres on the host for local tooling:
+    # ports:
+    #   - "5432:5432"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    command: >
+      --smtp-auth-accept-any --smtp-auth-allow-insecure
+      --listen 0.0.0.0:8025 --smtp 0.0.0.0:1025
+    ports:
+      - "8025:8025"   # web UI; SMTP stays internal on 1025
+
+  extractor:
+    build: ./services/extractor
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "8000"
+
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-returnright};Username=${POSTGRES_USER:-returnright};Password=${POSTGRES_PASSWORD:-returnright}
+      Smtp__Host: mailpit
+      Smtp__Port: "1025"
+      Smtp__From: ${SMTP_FROM:-ReturnRight <no-reply@returnright.local>}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__UseStartTls: ${SMTP_USE_STARTTLS:-false}
+      Reminders__PollIntervalSeconds: ${REMINDERS_POLL_INTERVAL_SECONDS:-30}
+      Reminders__RetryDelaysMinutes__0: ${REMINDERS_RETRY_DELAY_1:-5}
+      Reminders__RetryDelaysMinutes__1: ${REMINDERS_RETRY_DELAY_2:-30}
+      Reminders__RetryDelaysMinutes__2: ${REMINDERS_RETRY_DELAY_3:-120}
+      Extractor__BaseUrl: http://extractor:8000
+      Extractor__SharedSecret: ${EXTRACTOR_SHARED_SECRET:-}
+      Storage__RootPath: /data/storage
+      Storage__MaxUploadBytes: ${STORAGE_MAX_UPLOAD_BYTES:-10485760}
+      App__BaseUrl: ${APP_BASE_URL:-http://localhost:3000}
+      Database__MigrateOnStartup: "true"
+      # Compose serves plain http on localhost, so the auth/CSRF cookies must not
+      # require Secure. Production deployments should set this to "true".
+      Auth__RequireSecureCookie: "false"
+      Seed__Enabled: ${SEED_DEMO_DATA:-true}
+      Seed__DemoPassword: ${DEMO_PASSWORD:-}
+    volumes:
+      - appstorage:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      extractor:
+        condition: service_started
+    expose:
+      - "8080"
+
+  web:
+    build: ./apps/web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      API_INTERNAL_URL: http://api:8080
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  appstorage:
