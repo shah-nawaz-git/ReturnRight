@@ -78,6 +78,7 @@ app.MapGroup("/api/purchases").RequireAuthorization().MapPurchaseEndpoints();
 app.MapGroup("/api/documents").RequireAuthorization().MapDocumentEndpoints();
 app.MapGroup("/api/intakes").RequireAuthorization().MapIntakeEndpoints();
 app.MapGroup("/api/notifications").RequireAuthorization().MapNotificationEndpoints();
+app.MapHomeEndpoints();
 var casesGroup = app.MapGroup("/api/cases").RequireAuthorization();
 casesGroup.MapCaseEndpoints();
 casesGroup.MapEvidenceEndpoints();

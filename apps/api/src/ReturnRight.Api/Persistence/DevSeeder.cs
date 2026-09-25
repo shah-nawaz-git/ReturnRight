@@ -266,7 +266,7 @@ public static class DevSeeder
             CreatedAt = now.AddDays(-60),
             UpdatedAt = now.AddDays(-60),
         };
-        resolvedCase.Purchase.Items.Add(new PurchaseItem
+        var lamp = new PurchaseItem
         {
             ProductName = "Nordlys Desk Lamp",
             Quantity = 1,
@@ -275,6 +275,12 @@ public static class DevSeeder
             CommercialWarrantyEndProvenance = FieldProvenance.User(),
             SortOrder = 0,
             CreatedAt = now.AddDays(-60),
+        };
+        resolvedCase.Purchase.Items.Add(lamp);
+        resolvedCase.AffectedItems.Add(new CaseAffectedItem
+        {
+            CaseId = resolvedCase.Id,
+            PurchaseItem = lamp,
         });
         Timeline(resolvedCase, TimelineEventType.CaseCreated, now.AddDays(-55),
             "Case created");

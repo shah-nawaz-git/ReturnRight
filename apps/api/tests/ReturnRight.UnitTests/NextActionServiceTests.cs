@@ -184,6 +184,24 @@ public class NextActionServiceTests
     }
 
     [Fact]
+    public void Rule7_uses_latest_timeline_event_not_updated_at()
+    {
+        var issueCase = WellPrepared(CaseStatus.WaitingForSeller);
+        MakeComplete(issueCase);
+        issueCase.FollowUps.Add(new FollowUp { Title = "Check in", DueAt = Now.AddDays(3) });
+        // UpdatedAt is yesterday; the latest event is 10 days ago.
+        issueCase.TimelineEvents.Add(new CaseTimelineEvent
+        {
+            EventType = TimelineEventType.InteractionAdded,
+            OccurredAt = Now.AddDays(-10),
+            Summary = "Seller contacted",
+        });
+
+        var action = Evaluate(issueCase)[0];
+        Assert.Contains($"last updated this case on {Now.AddDays(-10):d MMM}", action.Description);
+    }
+
+    [Fact]
     public void Rule8_first_incomplete_readiness_item_is_dismissible()
     {
         var issueCase = WellPrepared();

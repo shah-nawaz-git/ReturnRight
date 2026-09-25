@@ -63,14 +63,14 @@
   --secondary: #eef0ec;
   --secondary-foreground: #17212b;
   --muted: #eef0ec;
-  --muted-foreground: #667085;
+  --muted-foreground: #5d6572;
   --accent: #e8ebe5;
   --accent-foreground: #17212b;
   --destructive: #b54747;
   --destructive-foreground: #ffffff;
-  --success: #2f7d5b;
+  --success: #2b7354;
   --success-foreground: #ffffff;
-  --warning: #b7791f;
+  --warning: #8f6210;
   --warning-foreground: #ffffff;
   --border: #e4e7ec;
   --input: #e4e7ec;
@@ -100,5 +100,22 @@
   }
   html {
     @apply font-sans;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+  }
+}
+
+@layer utilities {
+  /* Bottom-safe-area padding for the mobile nav. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* 44px minimum touch target on small screens. */
+  .touch-target {
+    @apply max-sm:min-h-11 max-sm:min-w-11;
   }
 }

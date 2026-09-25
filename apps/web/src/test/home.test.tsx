@@ -1,12 +1,19 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import Home from "@/app/page";
+import { describe, expect, it, vi } from "vitest";
 
-describe("Home page", () => {
-  it("renders the ReturnRight heading", () => {
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...rest}>{children}</a>
+  ),
+}));
+
+import Home from "@/app/(marketing)/page";
+
+describe("Marketing home page", () => {
+  it("renders the hero heading", () => {
     render(<Home />);
     expect(
-      screen.getByRole("heading", { name: "ReturnRight" }),
-    ).toBeInTheDocument();
+      screen.getByRole("heading", { level: 1 }),
+    ).toHaveTextContent(/purchase problem/i);
   });
 });

@@ -31,6 +31,7 @@ venv/
 
 # Runtime data (anchored: apps/api/src/.../Storage/ is source code)
 /storage/
+/apps/storage/
 uploads/
 tmp/
 *.log

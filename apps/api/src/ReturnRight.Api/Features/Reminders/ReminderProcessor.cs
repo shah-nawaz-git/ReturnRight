@@ -132,7 +132,7 @@ public class ReminderProcessor(
     private string CaseUrl(Guid caseId)
     {
         var baseUrl = configuration["App:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:3000";
-        return $"{baseUrl}/cases/{caseId}";
+        return $"{baseUrl}/app/cases/{caseId}";
     }
 
     private static string TruncatedError(Exception ex, string? recipientEmail)

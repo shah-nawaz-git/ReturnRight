@@ -76,6 +76,8 @@ public class HttpExtractorClient(HttpClient httpClient, ILogger<HttpExtractorCli
     {
         public string? Name { get; set; }
         public int? Quantity { get; set; }
+        // The extractor emits unit_price as a string ("389.99").
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? UnitPrice { get; set; }
         public double Confidence { get; set; }
     }

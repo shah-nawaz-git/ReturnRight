@@ -123,7 +123,9 @@ public static class NextActionService
                 or CaseStatus.ReplacementPending
             && openFollowUps.FirstOrDefault(f => f.DueAt >= now) is { } waiting)
         {
-            var lastUpdate = issueCase.UpdatedAt;
+            var lastUpdate = issueCase.TimelineEvents
+                .Select(e => (DateTimeOffset?)e.OccurredAt)
+                .Max() ?? issueCase.UpdatedAt;
             candidates.Add(new(
                 $"waiting:{waiting.Id}", "waiting",
                 issueCase.Status switch

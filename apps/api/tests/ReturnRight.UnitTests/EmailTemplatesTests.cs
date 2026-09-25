@@ -12,11 +12,11 @@ public class EmailTemplatesTests
             "Broken headphones from SoundMarket",
             "Check in with the seller",
             new DateTimeOffset(2026, 10, 5, 9, 0, 0, TimeSpan.Zero),
-            "http://localhost:3000/cases/abc123");
+            "http://localhost:3000/app/cases/abc123");
 
         Assert.Equal("Follow-up due for your ReturnRight case", message.Subject);
-        Assert.Contains("http://localhost:3000/cases/abc123", message.HtmlBody);
-        Assert.Contains("http://localhost:3000/cases/abc123", message.TextBody);
+        Assert.Contains("http://localhost:3000/app/cases/abc123", message.HtmlBody);
+        Assert.Contains("http://localhost:3000/app/cases/abc123", message.TextBody);
         Assert.Contains("5 Oct 2026", message.HtmlBody);
     }
 
@@ -28,7 +28,7 @@ public class EmailTemplatesTests
             "Case <script>alert(1)</script>",
             "Follow <script>alert(2)</script>",
             DateTimeOffset.UtcNow,
-            "http://localhost:3000/cases/abc123");
+            "http://localhost:3000/app/cases/abc123");
 
         Assert.DoesNotContain("<script>", message.HtmlBody);
         Assert.Contains("&lt;script&gt;", message.HtmlBody);
