@@ -94,8 +94,11 @@ Storage and serving (`Storage/LocalFileStorage.cs`, `Features/Documents`):
 - `auth` policy: 10 requests/minute **per IP** on login and register.
 - `uploads` policy: 20 requests/minute **per user** (falls back to IP) on
   intake and evidence/document uploads.
-- Rejections return a `429` problem. `UseForwardedHeaders` trusts
-  `X-Forwarded-For`/`X-Forwarded-Proto` so limits hold behind a proxy.
+- Rejections return a `429` problem. `UseForwardedHeaders` is enabled for
+  `X-Forwarded-For`/`X-Forwarded-Proto`, but with the default
+  `KnownProxies`/`KnownNetworks` (loopback only). Behind the Compose stack's
+  Next.js container the forwarded IP is therefore ignored and the `auth`
+  limit is effectively shared by all clients — see Known limitations.
 - Limits are in-memory per instance — see Known limitations.
 
 ## Web app headers
@@ -169,5 +172,9 @@ external audit.
 - **No audit log of logins** — security events aren't recorded for review.
 - **Rate limiting is in-memory per instance** — multi-instance deployments
   need a distributed limiter or a front proxy.
+- **Per-IP auth limit is proxy-naive** — forwarded client IPs are only
+  trusted from loopback proxies, so behind the Compose web container the
+  login/registration limit is shared. Register the proxy in
+  `ForwardedHeadersOptions.KnownNetworks` when deploying behind one.
 - **Docker stack verified in CI only** — the compose file was exercised on
   GitHub Actions, not on a local Docker host.
