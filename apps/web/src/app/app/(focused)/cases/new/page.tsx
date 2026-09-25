@@ -364,8 +364,12 @@ function Wizard() {
                 We&apos;ll read it and pre-fill the purchase details for you.
               </p>
               <IntakeUploader
-                onFileChanged={() => {
-                  set({ intakeStatus: "processing" });
+                onFileChanged={(file) => {
+                  set(
+                    file
+                      ? { intakeStatus: "processing" }
+                      : { intakeStatus: "none", intakeId: null },
+                  );
                 }}
                 onResolved={(intake) => {
                   if (intake.status === "succeeded") {
@@ -375,15 +379,17 @@ function Wizard() {
                       intakeStatus: "succeeded",
                       purchase,
                       purchaseMeta: meta as Record<string, FieldMeta>,
+                      step: nextStep(state),
                     });
                   } else {
+                    // Stay on this step so the "couldn't read" notice is visible;
+                    // Next advances to manual entry and keeps the intake linked.
                     set({
                       intakeId: intake.id,
                       intakeStatus: "failed",
                       purchase: { ...(state.purchase ?? { merchantName: "", orderNumber: "", purchaseDate: "", currency: "EUR", totalAmount: "", notes: "", items: [{ productName: "", quantity: "1", unitPrice: "" }] }) },
                     });
                   }
-                  set({ step: nextStep(state) });
                 }}
               />
               <Button

@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 import { firstCaseId, loginAsDemo } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
+  // Login can hit the API's 10/min auth limit and retry after ~65s.
+  test.setTimeout(120_000);
   await loginAsDemo(page);
 });
 

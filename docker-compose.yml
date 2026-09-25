@@ -40,6 +40,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-returnright};Username=${POSTGRES_USER:-returnright};Password=${POSTGRES_PASSWORD:-returnright}
       Smtp__Host: mailpit
       Smtp__Port: "1025"
@@ -47,7 +48,8 @@ services:
       Smtp__Username: ${SMTP_USERNAME:-}
       Smtp__Password: ${SMTP_PASSWORD:-}
       Smtp__UseStartTls: ${SMTP_USE_STARTTLS:-false}
-      Reminders__PollIntervalSeconds: ${REMINDERS_POLL_INTERVAL_SECONDS:-30}
+      RateLimiting__Enabled: ${RATELIMIT_ENABLED:-true}
+      Reminders__PollIntervalSeconds: ${REMINDERS_POLL_INTERVAL_SECONDS:-5}
       Reminders__RetryDelaysMinutes__0: ${REMINDERS_RETRY_DELAY_1:-5}
       Reminders__RetryDelaysMinutes__1: ${REMINDERS_RETRY_DELAY_2:-30}
       Reminders__RetryDelaysMinutes__2: ${REMINDERS_RETRY_DELAY_3:-120}
@@ -73,9 +75,13 @@ services:
       - "8080"
 
   web:
-    build: ./apps/web
+    build:
+      context: ./apps/web
+      args:
+        # Baked into the standalone bundle at image build time (rewrites are
+        # evaluated then). Keep in sync with the api service's exposed port.
+        API_INTERNAL_URL: ${API_INTERNAL_URL_DOCKER:-http://api:8080}
     restart: unless-stopped
-    env_file: .env
     environment:
       API_INTERNAL_URL: http://api:8080
     depends_on:

@@ -1,0 +1,12 @@
+title = "ReturnRight gitleaks config"
+
+[allowlist]
+description = "Build output and vendored dependencies"
+paths = [
+  '''apps/web/\.next/''',
+  '''apps/web/node_modules/''',
+  '''apps/api/.+/bin/''',
+  '''apps/api/.+/obj/''',
+  '''services/extractor/\.venv/''',
+  '''node_modules/''',
+]

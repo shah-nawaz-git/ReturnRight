@@ -42,6 +42,7 @@ jobs:
       - run: dotnet format --verify-no-changes
       - run: dotnet build -warnaserror
       - run: dotnet test tests/ReturnRight.UnitTests
+      # Integration tests use Testcontainers — Docker is available on ubuntu runners.
       - run: dotnet test tests/ReturnRight.IntegrationTests
 
   extractor:
@@ -62,7 +63,63 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
-      - run: pytest
+      - run: python -m pytest
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [web, api, extractor]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Create .env for compose
+        run: |
+          cp .env.example .env
+          cat >> .env <<'EOF'
+          DEMO_PASSWORD=DemoPass12345
+          AUTH_REQUIRE_SECURE_COOKIE=false
+          REMINDERS_POLL_INTERVAL_SECONDS=5
+          RATELIMIT_ENABLED=false
+          EOF
+      - name: Build and start the stack
+        run: docker compose up -d --build
+      - name: Wait for the stack
+        run: |
+          for i in $(seq 1 90); do
+            web=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/ || true)
+            api=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/ping || true)
+            if [ "$web" = "200" ] && [ "$api" = "200" ]; then
+              echo "stack is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "stack did not come up" >&2
+          docker compose ps
+          docker compose logs --tail=200
+          exit 1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install Playwright + Chromium
+        working-directory: apps/web
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Playwright e2e
+        working-directory: apps/web
+        run: npx playwright test
+        env:
+          PW_BASE_URL: http://localhost:3000
+          MAILPIT_URL: http://localhost:8025
+      - name: Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --tail=500
 
   security:
     runs-on: ubuntu-latest
@@ -83,7 +140,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: pip-audit (extractor)
-        run: pip install pip-audit && pip-audit -r services/extractor/requirements.txt
+        run: >
+          pip install pip-audit &&
+          pip-audit -r services/extractor/requirements.txt -r services/extractor/requirements-dev.txt
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -97,9 +156,3 @@ jobs:
             echo "Vulnerable packages found" >&2
             exit 1
           fi
-
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - run: docker compose build

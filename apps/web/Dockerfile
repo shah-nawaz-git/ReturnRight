@@ -8,6 +8,11 @@ RUN npm ci
 FROM node:24-alpine AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# rewrites() in next.config.ts are resolved when the standalone bundle is
+# built, so the proxy target must be set at build time, not only at run time.
+# The compose network name is the right default; override for other hosts.
+ARG API_INTERNAL_URL=http://api:8080
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

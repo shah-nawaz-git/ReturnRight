@@ -58,10 +58,20 @@ await app.Services.ApplyStartupTasksAsync(app.Environment, app.Configuration);
 
 // Unhandled exceptions become a consumer-friendly problem+json — never a stack trace.
 app.UseExceptionHandler(errorApp =>
-    errorApp.Run(context => ProblemResults.WriteAsync(
-        context.Response,
-        StatusCodes.Status500InternalServerError,
-        "Something went wrong on our side. Please try again.")));
+    errorApp.Run(context =>
+    {
+        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+        return error is Microsoft.AspNetCore.Http.BadHttpRequestException badRequest
+            && badRequest.Message.Contains("body too large", StringComparison.OrdinalIgnoreCase)
+            ? ProblemResults.WriteAsync(
+                context.Response,
+                StatusCodes.Status413PayloadTooLarge,
+                "That file is too large.")
+            : ProblemResults.WriteAsync(
+                context.Response,
+                StatusCodes.Status500InternalServerError,
+                "Something went wrong on our side. Please try again.");
+    }));
 app.UseStatusCodePages();
 app.UseForwardedHeaders();
 app.UseAuthentication();

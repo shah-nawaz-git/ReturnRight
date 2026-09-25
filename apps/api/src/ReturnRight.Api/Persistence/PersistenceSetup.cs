@@ -17,7 +17,7 @@ public static class PersistenceSetup
         return builder;
     }
 
-    /// <summary>Run after build: migrate the database (opt-in) and run the dev seeder.</summary>
+    /// <summary>Run after build: migrate the database (opt-in) and seed demo data (opt-in).</summary>
     public static async Task ApplyStartupTasksAsync(
         this IServiceProvider services, IHostEnvironment environment, IConfiguration configuration)
     {
@@ -27,9 +27,8 @@ public static class PersistenceSetup
         {
             await db.Database.MigrateAsync();
         }
-        if (environment.IsDevelopment())
-        {
-            await DevSeeder.SeedAsync(scope.ServiceProvider);
-        }
+        // DevSeeder itself checks Seed:Enabled and requires Seed:DemoPassword to
+        // be set, so it's a no-op unless explicitly configured (e.g. compose).
+        await DevSeeder.SeedAsync(scope.ServiceProvider);
     }
 }
