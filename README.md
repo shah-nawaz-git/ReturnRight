@@ -40,7 +40,7 @@ A purchase problem produces information in a dozen places: an invoice in an emai
 
 ## What ReturnRight does
 
-| | |
+| Pillar | What the user gets |
 | --- | --- |
 | **Build** | Start a case in a short guided flow: what went wrong, what you want the seller to do, and your receipt or order confirmation, read automatically where possible and always editable. |
 | **Track** | Keep evidence, seller interactions, the requested outcome and follow-ups together. A plain-language timeline records what happened and when, and reminders make sure follow-ups are not forgotten. |
