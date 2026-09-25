@@ -22,10 +22,10 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN useradd -m -u 1000 appuser \
-    && mkdir -p /data/storage \
-    && chown -R appuser:appuser /data
-USER appuser
+# The aspnet image ships a non-root `app` user; UID 1000 is already taken there.
+RUN mkdir -p /data/storage \
+    && chown -R app:app /data
+USER app
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
