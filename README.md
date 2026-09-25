@@ -16,11 +16,11 @@ The central object is the **issue case**, not the receipt. ReturnRight is not a 
 
 ## Product
 
-![ReturnRight landing page](docs/screenshots/landing.png)
-
 ![Case workspace: status, next step, readiness, summary and Case File download](docs/screenshots/case-workspace.png)
 
 *The case workspace. Left: the next obvious step and a readiness checklist. Right: purchase, affected items, requested outcome, next follow-up and the Case File download.*
+
+![ReturnRight landing page](docs/screenshots/landing.png)
 
 <p align="center">
   <img src="docs/screenshots/wizard-mobile.png" alt="Case wizard on a phone: extracted purchase details with provenance tags" width="32%" />
